@@ -1,0 +1,14 @@
+node_modules/
+**/dist/
+.turbo/
+**/*.tsbuildinfo
+coverage/
+*.log
+.DS_Store
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+docker/secrets/*
+!docker/secrets/.gitkeep

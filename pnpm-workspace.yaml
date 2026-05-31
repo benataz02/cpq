@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+
+# pnpm 10 blocks dependency lifecycle/build scripts by default.
+# Allowlist the deps that legitimately need to run install scripts.
+onlyBuiltDependencies:
+  - esbuild
+  - "@gorules/zen-engine"
