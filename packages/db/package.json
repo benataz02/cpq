@@ -1,0 +1,27 @@
+{
+  "name": "@cpq/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "postgres": "3.4.9",
+    "@cpq/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9",
+    "vitest": "^3",
+    "@types/node": "^24",
+    "drizzle-kit": "0.31.10",
+    "tsx": "^4"
+  }
+}
