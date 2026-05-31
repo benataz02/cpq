@@ -5,6 +5,7 @@
     { "path": "packages/expr" },
     { "path": "packages/contract" },
     { "path": "packages/core" },
-    { "path": "packages/db" }
+    { "path": "packages/db" },
+    { "path": "apps/api" }
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "name": "@cpq/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "fastify": "^5.8.5",
+    "@orpc/server": "^1.14.4",
+    "@orpc/openapi": "^1.14.4",
+    "@orpc/zod": "^1.14.4",
+    "@fastify/cors": "^11",
+    "@fastify/helmet": "^13",
+    "@fastify/under-pressure": "^9",
+    "@cpq/contract": "workspace:*",
+    "@cpq/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9",
+    "@types/node": "^24",
+    "tsx": "^4",
+    "vitest": "^3"
+  }
+}
