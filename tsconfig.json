@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/constraint-engine" }
+    { "path": "packages/constraint-engine" },
+    { "path": "packages/expr" }
   ]
 }

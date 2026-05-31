@@ -1,0 +1,20 @@
+{
+  "name": "@cpq/expr",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "mathjs": "^15.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9",
+    "vitest": "^3"
+  }
+}
