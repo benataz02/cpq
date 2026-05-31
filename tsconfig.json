@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/constraint-engine" },
     { "path": "packages/expr" },
-    { "path": "packages/contract" }
+    { "path": "packages/contract" },
+    { "path": "packages/core" }
   ]
 }
