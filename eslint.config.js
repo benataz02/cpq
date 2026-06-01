@@ -67,6 +67,19 @@ export default [
               message:
                 'apps/web is browser-only: import the oRPC client + @cpq/contract + @cpq/core (root) — never @cpq/db, @cpq/core/server, or @orpc/server*.',
             },
+            {
+              from: ['contract'],
+              disallow: [
+                '@cpq/sap-b1',
+                '@cpq/sap-b1/**',
+                'undici',
+                'tough-cookie',
+                'http-cookie-agent',
+                'fast-xml-parser',
+              ],
+              message:
+                '@cpq/contract is a browser-safe leaf: never import @cpq/sap-b1 or transport deps (undici/tough-cookie/http-cookie-agent/fast-xml-parser).',
+            },
           ],
         },
       ],
@@ -84,6 +97,26 @@ export default [
             { group: ['@cpq/db', '@cpq/db/*'], message: 'apps/web must not import @cpq/db (server-only).' },
             { group: ['@cpq/core/server'], message: 'apps/web must not import @cpq/core/server (Node-only).' },
             { group: ['@orpc/server', '@orpc/server/*'], message: 'apps/web must use the oRPC client, not @orpc/server.' },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Reliable hard gate: @cpq/contract is a browser-safe leaf — it must never
+    // import @cpq/sap-b1 or any transport dep, so the literal same validate()
+    // import keeps running in Node and the browser.
+    files: ['packages/contract/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['@cpq/sap-b1', '@cpq/sap-b1/*'], message: '@cpq/contract must not import @cpq/sap-b1 (browser-safe leaf).' },
+            { group: ['undici'], message: '@cpq/contract must not import undici (transport dep — browser-safe leaf).' },
+            { group: ['tough-cookie'], message: '@cpq/contract must not import tough-cookie (transport dep — browser-safe leaf).' },
+            { group: ['http-cookie-agent'], message: '@cpq/contract must not import http-cookie-agent (transport dep — browser-safe leaf).' },
+            { group: ['fast-xml-parser'], message: '@cpq/contract must not import fast-xml-parser (transport dep — browser-safe leaf).' },
           ],
         },
       ],

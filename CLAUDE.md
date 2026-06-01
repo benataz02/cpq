@@ -18,10 +18,34 @@ package, not by convention.
 
 ---
 
-## Status: P0 Foundation — ✅ COMPLETE
+## Status: P0 Foundation — ✅ COMPLETE · P1 SAP Integration — ✅ code-complete · ⏳ LIVE acceptance pending sandbox run
 
 The monorepo boots end-to-end. All 7 P0 acceptance gates are proven with real evidence (see source plan).
-Pushed to `origin/master`. Current toolchain: **Node 24** (`.nvmrc`; runs on 25+), **pnpm 10.33.4**, Docker.
+P0 pushed to `origin/master`. Current toolchain: **Node 24** (`.nvmrc`; runs on 25+), **pnpm 10.33.4**, Docker.
+
+**P1 = metadata-driven generic SAP CRUD** (on branch `p1-sap-integration`). `@cpq/sap-b1` is **Service-Layer-ONLY**:
+it discovers entities from `$metadata` (EDMX parser → `SapMetadata`), gates every operation through a per-tenant
+`sap_entity_configs` **allowlist** (migration `0001`), and validates payloads **strictly** against the
+metadata-derived shape. Operations: **Read** (list + get, paginated via `@odata.nextLink`), **Create**, **Update**
+(PATCH + `If-Match`/ETag optimistic concurrency), **Delete**, and **bound actions** (e.g. `Cancel`/`Close`). This is
+the **deterministic, non-AI commit path** mandated by SAP API Policy §2.2.2. Writes append a **best-effort**
+`audit_log` row (fire-and-forget, never fails the write); `slug → uuid` tenant resolution backs the allowlist + audit;
+`resolveSapConfig` assembles config from env + the `/run/secrets/sap_password` file-secret.
+**Accept:** the LIVE acceptance suite (`packages/sap-b1/test/live.acceptance.test.ts`) drives metadata refresh →
+BusinessPartners create/get/update/delete → Quotation create → `Cancel`. It is **env-gated** (`skipIf(!SAP_BASE_URL)`):
+set `SAP_BASE_URL`/`SAP_COMPANY_DB`/`SAP_USERNAME` + the `/run/secrets/sap_password` secret, then `pnpm -F @cpq/sap-b1 test`.
+**Not yet run in this repo** (no sandbox creds present) — the **hermetic** suite is fully green (79 tests; the live suite
+skips). Running the live round-trip against the sandbox is the **final P1 acceptance step**.
+
+**Verified evidence (2026-06-01):** whole-repo gate `pnpm turbo run typecheck lint test build` → **44/44**;
+`@cpq/sap-b1` **76 hermetic tests** (undici `MockAgent` + loopback `http.Server` + static EDMX fixture, zero network)
+plus **3 skipped** live; migration `0001` applies **idempotently on a fresh pgvector volume** on top of `0000`
+(grep-gate: `vector_cosine_ops` only in `0000`); the `contract → sap-b1` eslint boundary **bites** (verified by a
+temp import → lint fail → revert); `@cpq/db` allowlist/tenant repos green against a live PG, skip cleanly without
+`DATABASE_URL`. 20 task commits on `p1-sap-integration` + a holistic-review fix (`If-Match:*` ETag fallback).
+
+> **P2-UI seam (emits now):** `describeEntity` already emits a **JSON Schema (draft 2020-12)** per entity set —
+> the shape the P2 builder/manual-renderer will consume. The seam is live; the UI that reads it is P2.
 
 **Workspace graph** (11 projects; pnpm + Turborepo + TS project references + `eslint-plugin-boundaries`):
 
@@ -33,7 +57,7 @@ Pushed to `origin/master`. Current toolchain: **Node 24** (`.nvmrc`; runs on 25+
 | `@cpq/core` | Pure root (ids/Result/errors) + `/server` entry (ALS request-context, pino) | `pino` |
 | `@cpq/db` | Drizzle pg schema + pgvector HNSW + advisory-locked migrator + `withTenant` | `drizzle-orm`, `postgres` |
 | `@cpq/configurator` | `publish` (hash+validate); ZEN decision-table stub (P2) | `@cpq/contract` |
-| `@cpq/sap-b1` | SL client **skeleton**: cookie jar + single-flight re-login + Zod DTO (P1-ready seam) | `tough-cookie`, `zod` |
+| `@cpq/sap-b1` | **Metadata-driven SL client**: undici `CookieAgent` + single-flight relogin, EDMX→`SapMetadata`, `describeEntity`→JSON Schema, strict validator, generic CRUD + bound-action gateway, per-tenant registry | `undici`, `http-cookie-agent`, `tough-cookie`, `p-retry`, `fast-xml-parser`, `zod` |
 | `@cpq/ai` | Anthropic wrapper + `toStructuredFormat` (P4-ready) | `@anthropic-ai/sdk`, `zod` |
 | `@cpq/similarity` | Tested pure Gower + `Embedder` interface (P3-ready) | — |
 | `apps/api` | Fastify 5 + oRPC dual handler + ALS `onRequest` + `/healthz` | `fastify`, `@orpc/server`, `@orpc/openapi`, `@orpc/zod` |
@@ -146,6 +170,12 @@ timeout" → keep-alive timer. Read `Items`/`BusinessPartners`/`BOM` (paginate v
 against the demo B1. Hand-rolled over `undici` + `http-cookie-agent` + `tough-cookie` + `p-retry` + Zod DTOs
 (no maintained SDK — `b1-service-layer` is forbidden).
 **Accept:** round-trip read + a Quotation written to the sandbox.
+**✅ Delivered** (branch `p1-sap-integration`) — redesigned as **generic, metadata-driven** CRUD rather than typed
+per-entity gateways: discovers entities from `$metadata`, per-tenant `sap_entity_configs` allowlist, strict
+metadata-derived validation, PATCH+`If-Match`/ETag, bound actions, deterministic §2.2.2 commit path, best-effort
+`audit_log`, `describeEntity`→JSON Schema for the P2 UI. **Hermetic suite green; the LIVE round-trip above is
+pending a sandbox run** (env-gated `live.acceptance.test.ts`). *Deferred:* `SQLQueries` cross-DB (MSSQL+HANA) reads —
+not required by the metadata-driven entity-CRUD acceptance; revisit if a join-only read is needed.
 **P0 left ready:** `SapClient` (cookie jar + tested single-flight re-login + `SessionSchema` DTO boundary).
 
 ### P2 — Configurator core (the strong point)

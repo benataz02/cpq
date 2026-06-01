@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="SAPB1" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EnumType Name="BoCardTypes">
+        <Member Name="cCustomer" Value="C"/>
+        <Member Name="cSupplier" Value="S"/>
+      </EnumType>
+      <EnumType Name="BoYesNoEnum">
+        <Member Name="tYES" Value="-3"/>
+        <Member Name="tNO" Value="-2"/>
+      </EnumType>
+      <EntityType Name="BusinessPartner">
+        <Key>
+          <PropertyRef Name="CardCode"/>
+        </Key>
+        <Property Name="CardCode" Type="Edm.String" MaxLength="15" Nullable="false"/>
+        <Property Name="CardName" Type="Edm.String" MaxLength="100" Nullable="false"/>
+        <Property Name="CardType" Type="SAPB1.BoCardTypes"/>
+      </EntityType>
+      <EntityType Name="Document">
+        <Key>
+          <PropertyRef Name="DocEntry"/>
+        </Key>
+        <Property Name="DocEntry" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="CardCode" Type="Edm.String" MaxLength="15" Nullable="false"/>
+        <Property Name="DocTotal" Type="Edm.Double"/>
+        <Property Name="DocDate" Type="Edm.DateTimeOffset"/>
+        <NavigationProperty Name="DocumentLines" Type="Collection(SAPB1.DocumentLine)"/>
+      </EntityType>
+      <EntityType Name="DocumentLine">
+        <Key>
+          <PropertyRef Name="LineNum"/>
+        </Key>
+        <Property Name="LineNum" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="ItemCode" Type="Edm.String"/>
+        <Property Name="Quantity" Type="Edm.Double"/>
+      </EntityType>
+      <EntityType Name="Singleton">
+        <Key>
+          <PropertyRef Name="OnlyField"/>
+        </Key>
+        <Property Name="OnlyField" Type="Edm.String" Nullable="false"/>
+      </EntityType>
+      <EntityType Name="ItemPrice">
+        <Key>
+          <PropertyRef Name="ItemCode"/>
+          <PropertyRef Name="PriceList"/>
+        </Key>
+        <Property Name="ItemCode" Type="Edm.String" Nullable="false"/>
+        <Property Name="PriceList" Type="Edm.Int32" Nullable="false"/>
+        <Property Name="Price" Type="Edm.Double"/>
+      </EntityType>
+      <Action Name="Cancel" IsBound="true">
+        <Parameter Name="this" Type="SAPB1.Document"/>
+      </Action>
+      <EntityContainer Name="SAPB1Container">
+        <EntitySet Name="BusinessPartners" EntityType="SAPB1.BusinessPartner"/>
+        <EntitySet Name="Quotations" EntityType="SAPB1.Document"/>
+        <EntitySet Name="DocumentLines" EntityType="SAPB1.DocumentLine"/>
+        <EntitySet Name="Singletons" EntityType="SAPB1.Singleton"/>
+        <EntitySet Name="ItemPrices" EntityType="SAPB1.ItemPrice"/>
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>
