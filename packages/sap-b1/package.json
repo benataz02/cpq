@@ -11,10 +11,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "fast-xml-parser": "^4",
+    "http-cookie-agent": "^8",
+    "p-retry": "^6",
     "tough-cookie": "^5",
+    "undici": "^7",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^24",
     "typescript": "^5.9",
     "vitest": "^3"
   }
