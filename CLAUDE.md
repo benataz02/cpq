@@ -37,6 +37,13 @@ set `SAP_BASE_URL`/`SAP_COMPANY_DB`/`SAP_USERNAME` + the `/run/secrets/sap_passw
 **Not yet run in this repo** (no sandbox creds present) — the **hermetic** suite is fully green (79 tests; the live suite
 skips). Running the live round-trip against the sandbox is the **final P1 acceptance step**.
 
+**Verified evidence (2026-06-01):** whole-repo gate `pnpm turbo run typecheck lint test build` → **44/44**;
+`@cpq/sap-b1` **76 hermetic tests** (undici `MockAgent` + loopback `http.Server` + static EDMX fixture, zero network)
+plus **3 skipped** live; migration `0001` applies **idempotently on a fresh pgvector volume** on top of `0000`
+(grep-gate: `vector_cosine_ops` only in `0000`); the `contract → sap-b1` eslint boundary **bites** (verified by a
+temp import → lint fail → revert); `@cpq/db` allowlist/tenant repos green against a live PG, skip cleanly without
+`DATABASE_URL`. 20 task commits on `p1-sap-integration` + a holistic-review fix (`If-Match:*` ETag fallback).
+
 > **P2-UI seam (emits now):** `describeEntity` already emits a **JSON Schema (draft 2020-12)** per entity set —
 > the shape the P2 builder/manual-renderer will consume. The seam is live; the UI that reads it is P2.
 
