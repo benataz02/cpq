@@ -10,7 +10,10 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "check": "turbo run typecheck lint test build"
+    "check": "turbo run typecheck lint test build",
+    "dev": "turbo run dev --filter=@cpq/api --filter=@cpq/web",
+    "dev:api": "turbo run dev --filter=@cpq/api",
+    "dev:web": "turbo run dev --filter=@cpq/web"
   },
   "devDependencies": {
     "turbo": "^2",
