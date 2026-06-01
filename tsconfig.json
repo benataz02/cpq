@@ -6,6 +6,10 @@
     { "path": "packages/contract" },
     { "path": "packages/core" },
     { "path": "packages/db" },
+    { "path": "packages/configurator" },
+    { "path": "packages/similarity" },
+    { "path": "packages/ai" },
+    { "path": "packages/sap-b1" },
     { "path": "apps/api" }
   ]
 }
