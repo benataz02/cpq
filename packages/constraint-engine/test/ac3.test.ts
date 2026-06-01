@@ -34,6 +34,20 @@ describe('ac3', () => {
     expect(r.domains.y).toEqual([1, 2, 3]);
   });
 
+  it('is sound with multiple (conflicting) constraints on the same variable pair (regression)', () => {
+    // Two constraints on the SAME (c,b) pair whose allowed sets are disjoint =>
+    // no joint solution. A buggy AC-3 (reverse-arc exclusion) terminated early
+    // reporting consistent:true with {c:[0],b:[2]} — which violates c1.
+    const c1: BinaryConstraint = {
+      a: 'c',
+      b: 'b',
+      pred: (cv, bv) => (cv === 3 && bv === 2) || (cv === 0 && bv === 3),
+    };
+    const c2: BinaryConstraint = { a: 'c', b: 'b', pred: (cv, bv) => cv === 0 && bv === 2 };
+    const r = ac3({ c: [3, 0], b: [3, 2] }, [c1, c2]);
+    expect(r.consistent).toBe(false);
+  });
+
   it('property: idempotent and never adds values', () => {
     const pool = [0, 1, 2, 3];
     const keyArb = fc.constantFrom('a', 'b', 'c');

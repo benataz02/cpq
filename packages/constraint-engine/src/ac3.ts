@@ -36,7 +36,11 @@ export function ac3(
     const arc = queue.shift()!;
     if (revise(arc)) {
       if (domains[arc.x].length === 0) return { domains, consistent: false };
-      for (const n of arcs.filter((a) => a.y === arc.x && a.x !== arc.y)) queue.push(n);
+      // Re-enqueue EVERY arc that uses arc.x as its support variable. The classic
+      // AC-3 optimization (skip the reverse arc, a.x === arc.y) is only sound with
+      // ONE constraint per variable pair — with multiple constraints on the same
+      // pair it skips arcs of *other* constraints and terminates non-arc-consistent.
+      for (const n of arcs.filter((a) => a.y === arc.x)) queue.push(n);
     }
   }
   return { domains, consistent: Object.values(domains).every((d) => d.length > 0) };
