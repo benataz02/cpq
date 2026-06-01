@@ -25,5 +25,16 @@ export function compileFormula(expr: string): { evaluate: (scope: Record<string,
     }
   });
   const code = node.compile();
-  return { evaluate: (scope) => code.evaluate({ ...scope }) as number }; // data-only numeric scope
+  return {
+    evaluate: (scope) => {
+      const result = code.evaluate({ ...scope }); // data-only numeric scope
+      // mathjs can return strings/units/complex/booleans/Infinity/NaN. Honour the
+      // `=> number` contract: a formula that isn't a finite number is an error,
+      // which validate() surfaces as a formula issue rather than poisoning `derived`.
+      if (typeof result !== 'number' || !Number.isFinite(result)) {
+        throw new Error(`formula did not evaluate to a finite number (got ${typeof result}: ${String(result)})`);
+      }
+      return result;
+    },
+  };
 }

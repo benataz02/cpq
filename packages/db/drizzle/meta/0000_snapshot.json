@@ -1,5 +1,5 @@
 {
-  "id": "72a29c8c-3c12-41e1-ae95-0c4f5deb5375",
+  "id": "11876c0b-8341-43da-838a-09dabdedafb0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -371,6 +371,19 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "frameworks_head_version_hash_framework_versions_content_hash_fk": {
+          "name": "frameworks_head_version_hash_framework_versions_content_hash_fk",
+          "tableFrom": "frameworks",
+          "tableTo": "framework_versions",
+          "columnsFrom": [
+            "head_version_hash"
+          ],
+          "columnsTo": [
+            "content_hash"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"

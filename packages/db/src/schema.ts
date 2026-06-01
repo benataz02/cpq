@@ -74,7 +74,7 @@ export const frameworks = pgTable(
       .notNull()
       .references(() => tenants.id),
     key: text('key').notNull(),
-    headVersionHash: text('head_version_hash'),
+    headVersionHash: text('head_version_hash').references(() => frameworkVersions.contentHash),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex('frameworks_tenant_key_idx').on(t.tenantId, t.key)],

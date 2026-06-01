@@ -1,4 +1,4 @@
-import { Input } from '@ui5/webcomponents-react';
+import { Input, type InputDomRef } from '@ui5/webcomponents-react';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { rankWith, isStringControl, type ControlProps } from '@jsonforms/core';
 import { Ui5ControlWrapper } from './Ui5ControlWrapper';
@@ -14,7 +14,7 @@ function TextInputControl({ data, handleChange, path, label, required, errors, e
           disabled={enabled === false}
           valueState={field.valueState}
           valueStateMessage={field.valueStateMessage}
-          onInput={(e) => handleChange(path, (e.target as unknown as { value: string }).value)}
+          onInput={(e) => handleChange(path, (e.target as InputDomRef).value)}
         />
       )}
     </Ui5ControlWrapper>

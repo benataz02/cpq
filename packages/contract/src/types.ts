@@ -27,7 +27,9 @@ export const ConstraintSchema = z.discriminatedUnion('type', [
     fields: z.array(z.string()),
     combos: z.array(z.array(z.union([z.string(), z.number(), z.boolean()]))),
   }),
-]);
+]).refine((c) => c.type !== 'range' || c.min !== undefined || c.max !== undefined, {
+  error: "a 'range' constraint must define at least one of 'min' or 'max'",
+});
 
 const FrameworkV1 = z.object({
   schemaVersion: z.literal(1),

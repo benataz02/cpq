@@ -33,4 +33,23 @@ describe('gower', () => {
     // price same (0*3) ; color differ (1*1) ; den 4 -> 0.25
     expect(gower({ price: 10, color: 'red' }, { price: 10, color: 'blue' }, w)).toBeCloseTo(0.25);
   });
+
+  it('stays finite and in [0,1] for non-numeric numeric-field inputs', () => {
+    const d = gower({ price: 'abc', color: 'red' }, { price: 10, color: 'red' }, specs);
+    expect(Number.isFinite(d)).toBe(true);
+    expect(d).toBeGreaterThanOrEqual(0);
+    expect(d).toBeLessThanOrEqual(1);
+  });
+
+  it('clamps to [0,1] even with a non-positive range', () => {
+    const bad: FeatureSpec[] = [{ key: 'price', type: 'numeric', range: -100 }];
+    const d = gower({ price: 0 }, { price: 50 }, bad);
+    expect(d).toBeGreaterThanOrEqual(0);
+    expect(d).toBeLessThanOrEqual(1);
+  });
+
+  it('throws when the total feature weight is zero (degenerate spec)', () => {
+    const zero: FeatureSpec[] = [{ key: 'price', type: 'numeric', weight: 0 }];
+    expect(() => gower({ price: 1 }, { price: 2 }, zero)).toThrow(/zero/);
+  });
 });

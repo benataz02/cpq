@@ -13,13 +13,20 @@ export function gower(a: Record<string, unknown>, b: Record<string, unknown>, sp
     den = 0;
   for (const s of specs) {
     const w = s.weight ?? 1;
+    if (w <= 0) continue; // non-positive weights don't participate
     den += w;
     if (s.type === 'numeric') {
-      const r = s.range || 1;
-      num += w * Math.min(1, Math.abs(Number(a[s.key]) - Number(b[s.key])) / r);
+      const r = s.range && s.range > 0 ? s.range : 1; // guard non-positive range
+      const av = Number(a[s.key]);
+      const bv = Number(b[s.key]);
+      // Non-numeric/missing values count as maximal dissimilarity, never NaN.
+      const term = Number.isFinite(av) && Number.isFinite(bv) ? Math.min(1, Math.abs(av - bv) / r) : 1;
+      num += w * term;
     } else {
       num += w * (a[s.key] === b[s.key] ? 0 : 1);
     }
   }
-  return den ? num / den : 0;
+  // Fail fast on a degenerate spec rather than silently returning 0 ("identical").
+  if (den === 0) throw new Error('gower: total feature weight is zero');
+  return num / den; // guaranteed in [0, 1]
 }

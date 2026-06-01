@@ -22,4 +22,9 @@ describe('compileFormula', () => {
     const f = compileFormula('import("os")');
     expect(() => f.evaluate({})).toThrow(/import|disabled/i);
   });
+
+  it('rejects a formula that does not evaluate to a finite number', () => {
+    expect(() => compileFormula('"hello"').evaluate({})).toThrow(/finite number/);
+    expect(() => compileFormula('1 / 0').evaluate({})).toThrow(/finite number/); // Infinity
+  });
 });
