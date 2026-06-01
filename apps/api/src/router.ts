@@ -1,6 +1,7 @@
 import { implement } from '@orpc/server';
 import { contract, validate } from '@cpq/contract';
 import { getContext, logger } from '@cpq/core/server';
+import { sapRouter } from './sap.js';
 
 // IMPLEMENT the shared contract. Both the RPC and OpenAPI handlers serve this
 // single router — one router, two surfaces, zero drift.
@@ -17,5 +18,6 @@ export const router = os.router({
   framework: {
     validate: os.framework.validate.handler(({ input }) => validate(input.framework, input.state)),
   },
+  sap: sapRouter,
 });
 export type AppRouter = typeof router;

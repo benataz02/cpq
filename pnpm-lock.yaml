@@ -44,6 +44,12 @@ importers:
       '@cpq/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@cpq/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@cpq/sap-b1':
+        specifier: workspace:*
+        version: link:../../packages/sap-b1
       '@fastify/cors':
         specifier: ^11
         version: 11.2.0
@@ -62,6 +68,9 @@ importers:
       '@orpc/zod':
         specifier: ^1.14.4
         version: 1.14.4(@orpc/contract@1.14.4)(@orpc/server@1.14.4(fastify@5.8.5)(ws@8.21.0))(fastify@5.8.5)(ws@8.21.0)(zod@4.4.3)
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(postgres@3.4.9)
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
