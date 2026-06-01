@@ -11,14 +11,19 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['test/**/*.node.test.ts', 'test/**/*.iso.test.ts', 'test/canonical.test.ts'],
+          include: [
+            'test/**/*.node.test.ts',
+            'test/**/*.iso.test.ts',
+            'test/canonical.test.ts',
+            'test/sap.dto.test.ts',
+          ],
         },
       },
       {
         test: {
           name: 'jsdom',
           environment: 'jsdom',
-          include: ['test/**/*.jsdom.test.ts', 'test/**/*.iso.test.ts'],
+          include: ['test/**/*.jsdom.test.ts', 'test/**/*.iso.test.ts', 'test/sap.dto.test.ts'],
         },
       },
     ],
