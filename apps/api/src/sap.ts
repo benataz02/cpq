@@ -164,7 +164,7 @@ export const sapRouter = os.sap.router({
       const gw = getSapGateway(tenantId);
       const current = await guard(() => gw.get(input.entitySet, input.key));
       const r = await guard(() =>
-        gw.update(input.entitySet, input.key, input.patch, { etag: current.etag ?? '' }),
+        gw.update(input.entitySet, input.key, input.patch, { etag: current.etag ?? '*' }),
       );
       void audit('entity.update', input.entitySet, keyToId(input.key), { patch: input.patch });
       return { record: r.data, etag: r.etag };
@@ -175,7 +175,7 @@ export const sapRouter = os.sap.router({
       await guard(() => assertOpAllowed(dbTenant, input.entitySet, 'delete'));
       const gw = getSapGateway(tenantId);
       const current = await guard(() => gw.get(input.entitySet, input.key));
-      await guard(() => gw.del(input.entitySet, input.key, { etag: current.etag ?? '' }));
+      await guard(() => gw.del(input.entitySet, input.key, { etag: current.etag ?? '*' }));
       void audit('entity.delete', input.entitySet, keyToId(input.key), {});
       return { deleted: true };
     }),

@@ -26,7 +26,7 @@ class EntityNotAllowedError extends Error {
   }
 }
 class SapValidationError extends Error {
-  constructor(readonly issues: { code: string; field?: string; message: string }[]) {
+  constructor(readonly issues: { code: string; path: string; message: string }[]) {
     super(`SAP payload validation failed: ${issues.map((i) => i.message).join('; ')}`);
     this.name = 'SapValidationError';
   }
@@ -126,7 +126,7 @@ describe('sap CRUD handlers (allowlist + audit + slug→uuid)', () => {
   });
 
   it('(c) validation mapping: gateway.create throws SapValidationError → 400 with issues', async () => {
-    const issues = [{ code: 'required', field: 'CardName', message: 'CardName is required' }];
+    const issues = [{ code: 'required', path: 'CardName', message: 'CardName is required' }];
     gatewayCreate.mockRejectedValueOnce(new SapValidationError(issues));
     const app = await buildServer();
     const res = await app.inject({
