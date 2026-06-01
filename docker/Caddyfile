@@ -1,0 +1,20 @@
+:8080 {
+	encode gzip
+
+	# API surfaces are proxied to the api service (prod equivalent of the Vite dev
+	# proxy). `handle` blocks are mutually exclusive and ordered, so the SPA
+	# fallback below never rewrites these paths.
+	handle /rpc/* {
+		reverse_proxy api:3000
+	}
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+
+	# Everything else: static SPA with client-side-routing fallback.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -1,0 +1,94 @@
+name: cpq
+
+services:
+  db:
+    image: pgvector/pgvector:0.8.2-pg17-bookworm
+    environment:
+      POSTGRES_USER: cpq
+      POSTGRES_DB: cpq
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgresql.tuned.conf:/etc/postgresql/postgresql.conf:ro
+    command: ['postgres', '-c', 'config_file=/etc/postgresql/postgresql.conf']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cpq -d cpq']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [internal]
+
+  # One-shot migrator: runs the advisory-locked Drizzle migrator, then exits 0.
+  migrate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    command:
+      - sh
+      - -c
+      - 'export DATABASE_URL="postgresql://cpq:$$(cat /run/secrets/db_password)@db:5432/cpq"; exec node packages/db/dist/migrate.js'
+    depends_on:
+      db:
+        condition: service_healthy
+    secrets:
+      - db_password
+    networks: [internal]
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    environment:
+      PORT: '3000'
+    command:
+      - sh
+      - -c
+      - 'export DATABASE_URL="postgresql://cpq:$$(cat /run/secrets/db_password)@db:5432/cpq"; exec node apps/api/dist/server.js'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    secrets:
+      - db_password
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - '3000:3000'
+    networks: [internal]
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:8080/ || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - '8080:8080'
+    networks: [internal]
+
+  # ----- optional profiles (not started by default) -----
+  analysis-sidecar:
+    profiles: ['analysis-sidecar']
+    image: python:3.13-slim
+    command: ['sh', '-c', 'echo "analysis-sidecar deferred to P3"; sleep infinity']
+    networks: [internal]
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password
