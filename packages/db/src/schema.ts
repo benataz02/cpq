@@ -140,3 +140,15 @@ export const itemEmbeddings = pgTable(
   },
   (t) => [index('item_embeddings_hnsw_idx').using('hnsw', t.embedding.op('vector_cosine_ops'))],
 );
+
+// Per-tenant allowlist of SAP Service Layer entity sets and the operations permitted
+// on each. The deterministic SAP code path (P1) consults this before any read/write.
+export const sapEntityConfigs = pgTable('sap_entity_configs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id').notNull().references(() => tenants.id),
+  entitySet: text('entity_set').notNull(),
+  enabledOps: jsonb('enabled_ops').$type<('read'|'create'|'update'|'delete'|'action')[]>().notNull().default([]),
+  labelField: text('label_field'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [uniqueIndex('sap_entity_configs_tenant_set_idx').on(t.tenantId, t.entitySet)]);
