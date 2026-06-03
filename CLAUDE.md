@@ -139,13 +139,27 @@ SAP integration and the configurator core early. **A SAP B1 sandbox is available
 > projection**; a **deterministic, non-AI code path** (in `@cpq/sap-b1`, invoked by an oRPC procedure) commits
 > to Service Layer, gated by HITL. Bake this boundary into every SAP-touching design.
 
-### P1 — SAP integration (de-risk first, LIVE)
+### P1 — SAP integration (de-risk first) — 🟡 core landed (mock-first, live-ready)
 Flesh out `@cpq/sap-b1`: `b1s/v2` login → B1SESSION+ROUTEID jar → single-flight re-login on 401/"session
 timeout" → keep-alive timer. Read `Items`/`BusinessPartners`/`BOM` (paginate via `@odata.nextLink`);
-`SQLQueries` cross-DB joined reads (MSSQL+HANA; `SELECT *` disallowed); **create a Quotation end-to-end**
-against the demo B1. Hand-rolled over `undici` + `http-cookie-agent` + `tough-cookie` + `p-retry` + Zod DTOs
+**create a Quotation end-to-end**. Hand-rolled over `undici` + `tough-cookie` + `p-retry` + Zod DTOs
 (no maintained SDK — `b1-service-layer` is forbidden).
 **Accept:** round-trip read + a Quotation written to the sandbox.
+
+**Landed (this phase):** real `SapClient` (login/cookie-jar/relogin/keep-alive/paginated OData reads/
+`createQuotation`) tested via undici **`MockAgent`**; SAP DTOs live in `@cpq/contract/src/sap.ts` (reused by
+the wire contract *and* the client — one model); deterministic non-AI `sap.*` oRPC procedures (§2.2.2) with an
+**idempotent** `sap.quotation.create` (replay returns the committed row; never double-posts) persisting to the
+new **`mapping_log`** table + `audit_log` (migration `0001`).
+**Deliberate deviations:** built **mock-first** (no live sandbox reachable in the build env) — the live
+round-trip is a config-only switch-on; dropped **`http-cookie-agent`** (its `CookieAgent` extends undici
+`Agent` and can't compose with `MockAgent`, which would leave the session path untested) in favor of explicit
+`tough-cookie` jar handling; **`SQLQueries`** cross-DB reads deferred until the live backend dialect (HANA vs
+MSSQL) is known.
+**Live switch-on:** set `SAP_SL_URL`, `SAP_COMPANYDB`, `SAP_USERNAME`, and `SAP_PASSWORD_FILE` (or
+`SAP_PASSWORD`) — see `docker/compose.yml`. The client is lazy: the API boots without these and a `sap.*` call
+errors clearly until they are set.
+**Still open:** `SQLQueries`; per-tenant `connector_config`; an actual live round-trip against the demo B1.
 **P0 left ready:** `SapClient` (cookie jar + tested single-flight re-login + `SessionSchema` DTO boundary).
 
 ### P2 — Configurator core (the strong point)

@@ -42,6 +42,13 @@ services:
       dockerfile: docker/Dockerfile.api
     environment:
       PORT: '3000'
+      # SAP B1 Service Layer (P1). The API boots without these (the client is
+      # lazy); a sap.* call errors clearly until they are set. Supply the password
+      # via the sap_password file secret (uncomment the blocks below) or SAP_PASSWORD.
+      SAP_SL_URL: '${SAP_SL_URL:-}'
+      SAP_COMPANYDB: '${SAP_COMPANYDB:-}'
+      SAP_USERNAME: '${SAP_USERNAME:-}'
+      # SAP_PASSWORD_FILE: /run/secrets/sap_password
     command:
       - sh
       - -c
@@ -51,6 +58,7 @@ services:
         condition: service_completed_successfully
     secrets:
       - db_password
+      # - sap_password
     healthcheck:
       test: ['CMD', 'node', '-e', "fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 5s
@@ -92,3 +100,5 @@ networks:
 secrets:
   db_password:
     file: ./secrets/db_password
+  # sap_password:
+  #   file: ./secrets/sap_password
