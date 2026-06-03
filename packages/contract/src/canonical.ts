@@ -15,8 +15,13 @@ export function canonicalize(value: unknown): string {
   return JSON.stringify(sortKeys(value));
 }
 
-export async function hashFramework(framework: Framework): Promise<string> {
-  const bytes = new TextEncoder().encode(canonicalize(framework));
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes); // isomorphic: Node 24 + browsers
+/** SHA-256 over any value's canonical form. Isomorphic (Node 24 + browsers). */
+export async function hashCanonical(value: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(canonicalize(value));
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function hashFramework(framework: Framework): Promise<string> {
+  return hashCanonical(framework);
 }
