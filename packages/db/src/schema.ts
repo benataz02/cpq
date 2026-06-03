@@ -23,6 +23,7 @@ export const tenants = pgTable('tenants', {
 export const provenanceEnum = pgEnum('provenance', ['manual', 'ai', 'suggested', 'locked']);
 export const configModeEnum = pgEnum('config_mode', ['manual', 'ai']);
 export const configStatusEnum = pgEnum('config_status', ['draft', 'valid', 'committed']);
+export const mappingStatusEnum = pgEnum('mapping_status', ['pending', 'committed', 'failed']);
 
 export const users = pgTable(
   'users',
@@ -139,4 +140,29 @@ export const itemEmbeddings = pgTable(
     features: jsonb('features').$type<Record<string, unknown>>().notNull().default({}),
   },
   (t) => [index('item_embeddings_hnsw_idx').using('hnsw', t.embedding.op('vector_cosine_ops'))],
+);
+
+// Maps a config/commit to its SAP object ids (spec §15). The (tenantId,
+// idempotencyKey) unique index is the dedup gate: a replayed commit returns the
+// committed row instead of POSTing a second Quotation to Service Layer.
+export const mappingLog = pgTable(
+  'mapping_log',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenants.id),
+    idempotencyKey: text('idempotency_key').notNull(),
+    configId: uuid('config_id').references(() => configurations.id),
+    sapObjectType: text('sap_object_type').notNull(),
+    sapDocEntry: integer('sap_doc_entry'),
+    sapDocNum: integer('sap_doc_num'),
+    status: mappingStatusEnum('status').notNull().default('pending'),
+    requestId: text('request_id').notNull(),
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull().default({}),
+    response: jsonb('response').$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex('mapping_log_tenant_idem_idx').on(t.tenantId, t.idempotencyKey)],
 );
