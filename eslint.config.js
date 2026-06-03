@@ -60,12 +60,14 @@ export default [
               disallow: [
                 '@cpq/db',
                 '@cpq/db/**',
+                '@cpq/sap-b1',
+                '@cpq/sap-b1/**',
                 '@cpq/core/server',
                 '@orpc/server',
                 '@orpc/server/**',
               ],
               message:
-                'apps/web is browser-only: import the oRPC client + @cpq/contract + @cpq/core (root) — never @cpq/db, @cpq/core/server, or @orpc/server*.',
+                'apps/web is browser-only: import the oRPC client + @cpq/contract + @cpq/core (root) — never @cpq/db, @cpq/sap-b1, @cpq/core/server, or @orpc/server*.',
             },
           ],
         },
@@ -82,6 +84,7 @@ export default [
         {
           patterns: [
             { group: ['@cpq/db', '@cpq/db/*'], message: 'apps/web must not import @cpq/db (server-only).' },
+            { group: ['@cpq/sap-b1', '@cpq/sap-b1/*'], message: 'apps/web must not import @cpq/sap-b1 (Node-only SAP client).' },
             { group: ['@cpq/core/server'], message: 'apps/web must not import @cpq/core/server (Node-only).' },
             { group: ['@orpc/server', '@orpc/server/*'], message: 'apps/web must use the oRPC client, not @orpc/server.' },
           ],

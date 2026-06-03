@@ -20,7 +20,9 @@
     "@fastify/helmet": "^13",
     "@fastify/under-pressure": "^9",
     "@cpq/contract": "workspace:*",
-    "@cpq/core": "workspace:*"
+    "@cpq/core": "workspace:*",
+    "@cpq/db": "workspace:*",
+    "@cpq/sap-b1": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9",

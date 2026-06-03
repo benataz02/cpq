@@ -10,6 +10,7 @@ import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { bindContext, logger } from '@cpq/core/server';
 import { contextFromRequest } from './context.js';
 import { router } from './router.js';
+import { closeSapClient } from './sapClient.js';
 
 export async function buildServer() {
   const app = Fastify({ logger: false });
@@ -26,6 +27,11 @@ export async function buildServer() {
   });
 
   app.get('/healthz', async () => ({ ok: true }));
+
+  // Release the SAP keep-alive timer + dispatcher on shutdown.
+  app.addHook('onClose', async () => {
+    await closeSapClient();
+  });
 
   const rpc = new RPCHandler(router, { interceptors: [onError((e) => logger.error(e))] });
   const api = new OpenAPIHandler(router, {
